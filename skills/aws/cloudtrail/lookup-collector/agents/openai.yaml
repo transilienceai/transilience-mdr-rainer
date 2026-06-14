@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS CloudTrail Lookup Collector"
+  short_description: "Collect reproducible CloudTrail lookup evidence"
+  default_prompt: "Use $aws-cloudtrail-lookup-collector to collect reproducible CloudTrail LookupEvents evidence for these accounts and events."

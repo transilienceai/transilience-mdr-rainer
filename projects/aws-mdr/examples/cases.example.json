@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "id": "root_login",
+      "title": "Root login review",
+      "match": {
+        "eventName": ["ConsoleLogin"],
+        "actor": ["root"]
+      }
+    },
+    {
+      "id": "access_key_creation",
+      "title": "Access key creation review",
+      "match": {
+        "eventName": ["CreateAccessKey"]
+      }
+    }
+  ]
+}

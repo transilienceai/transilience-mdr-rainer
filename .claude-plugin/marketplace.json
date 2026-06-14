@@ -1,0 +1,19 @@
+{
+  "name": "Transilience MDR Rainer",
+  "description": "Claude Code skills for authorized MDR, AWS CloudTrail investigation, detection engineering, and security operations reporting",
+  "plugins": [
+    {
+      "name": "aws-mdr",
+      "path": "projects/aws-mdr",
+      "description": "AWS CloudTrail MDR workflow: collect, normalize, package evidence, baseline, generate detections, triage, and report",
+      "tags": [
+        "aws",
+        "cloudtrail",
+        "mdr",
+        "soc",
+        "detection-engineering",
+        "incident-response"
+      ]
+    }
+  ]
+}

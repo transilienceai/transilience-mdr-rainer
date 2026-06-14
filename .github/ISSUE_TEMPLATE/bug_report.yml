@@ -1,0 +1,65 @@
+name: Bug Report
+description: Report a bug or false positive in an MDR skill, script, or example
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Do not include real customer evidence, account IDs, credentials, raw logs, or sensitive screenshots.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - Skill (CloudTrail collection)
+        - Skill (normalization)
+        - Skill (evidence packaging)
+        - Skill (baseline / detection specs)
+        - Skill (triage / reporting)
+        - Documentation
+        - Examples / smoke test
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: skill
+    attributes:
+      label: Skill or script
+      placeholder: "e.g. normalize-observations, lookup_events.py"
+    validations:
+      required: false
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug description
+      description: What went wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1. Run: `...`
+        2. Input shape: `...`
+        3. Observe: ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      value: |
+        - OS:
+        - Python version:
+        - boto3/botocore version:
+        - Claude Code version, if relevant:
+    validations:
+      required: false

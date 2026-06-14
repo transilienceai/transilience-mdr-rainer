@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a Question
+    url: https://github.com/transilienceai/transilience-mdr-rainer/discussions/new?category=q-a
+    about: Ask for usage help or workflow guidance
+  - name: Security Vulnerability
+    url: mailto:contact@transilience.ai
+    about: Report vulnerabilities or accidental sensitive-data exposure privately

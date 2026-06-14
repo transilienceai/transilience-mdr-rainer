@@ -1,0 +1,38 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.env
+.env.*
+.DS_Store
+
+# Runtime outputs may contain customer-confidential evidence.
+/outputs/
+projects/*/outputs/*
+!projects/*/outputs/README.md
+
+# Evidence, logs, and raw exports.
+evidence/
+screenshots/
+logs/
+*.log
+raw/
+tmp/
+temp/
+*.tmp
+
+# Credentials and customer configs.
+credentials.json
+config.json
+accounts.json
+*.credentials.json
+secrets/
+tokens/
+
+# Generated report/data files.
+*.parquet
+*.jsonl
+*.ndjson
+*.csv

@@ -1,0 +1,5 @@
+ConsoleLogin
+CreateAccessKey
+UpdateAccountPasswordPolicy
+DeleteBucket
+AuthorizeSecurityGroupIngress

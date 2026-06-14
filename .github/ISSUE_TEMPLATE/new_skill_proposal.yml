@@ -1,0 +1,48 @@
+name: New Skill Proposal
+description: Propose a new Claude Code MDR skill
+title: "[Skill]: "
+labels: ["new-skill", "discussion"]
+body:
+  - type: input
+    id: skill-name
+    attributes:
+      label: Skill name
+      description: Lowercase, hyphenated directory name.
+      placeholder: "e.g. guardduty-triage"
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - AWS
+        - Azure
+        - Google Cloud
+        - SIEM / log pipeline
+        - Detection engineering
+        - Evidence / reporting
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What MDR capability does this skill add?
+    validations:
+      required: true
+  - type: textarea
+    id: interfaces
+    attributes:
+      label: Inputs and outputs
+      description: Describe expected files, APIs, schemas, or CLI commands.
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety and data handling
+      description: Note credential handling, customer data risks, and sanitization needs.
+    validations:
+      required: true
