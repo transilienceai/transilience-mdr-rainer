@@ -1,6 +1,6 @@
 # AWS MDR Project
 
-This project exposes the AWS CloudTrail MDR skills for local use. The `.claude/skills` directory contains symlinks to canonical skills under `../../skills/aws/cloudtrail`.
+This project exposes the AWS CloudTrail MDR skills for local use. The `.claude/skills` directory contains real skill files so the project works immediately after cloning.
 
 ## Workflow
 

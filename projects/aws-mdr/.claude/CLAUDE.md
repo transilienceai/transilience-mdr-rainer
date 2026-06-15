@@ -1,6 +1,6 @@
 # AWS MDR Project
 
-This project exposes AWS CloudTrail MDR skills through `.claude/skills` symlinks.
+This project exposes AWS CloudTrail MDR skills through real files under `.claude/skills`.
 
 ## Workflow
 

@@ -6,7 +6,7 @@ Open-source Claude Code skills for authorized MDR, AWS CloudTrail investigation,
 
 - `skills/` - Canonical skill definitions.
 - `projects/` - Runnable Claude Code project environments.
-- `projects/aws-mdr/.claude/skills/` - Symlinks to the AWS CloudTrail skills.
+- `projects/aws-mdr/.claude/skills/` - Real copies of the AWS CloudTrail skills for direct clone usage.
 - `scripts/` - Repository validation and maintenance scripts.
 - `.claude-plugin/` - Plugin and marketplace metadata.
 - `.github/` - Issue templates, PR template, and CI.

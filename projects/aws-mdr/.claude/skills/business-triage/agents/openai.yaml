@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS CloudTrail Business Triage"
+  short_description: "Explain CloudTrail findings as business activity"
+  default_prompt: "Use $aws-cloudtrail-business-triage to triage these CloudTrail findings into business context and residual risk."

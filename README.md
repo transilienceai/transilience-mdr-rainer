@@ -27,7 +27,7 @@ Transilience MDR Rainer is a skills-first MDR toolkit. The initial release focus
 - Triage findings with business context and residual risk.
 - Package Markdown reports for review.
 
-The repository follows the same architecture as `transilienceai/communitytools`: canonical skills live at the repo root under `skills/`, and runnable projects under `projects/` symlink only the skills they need.
+The repository follows the same general architecture as `transilienceai/communitytools`: reusable skill source lives at the repo root under `skills/`, and runnable projects under `projects/` include the skill files they need directly so a plain clone works immediately.
 
 ## Prerequisites
 
@@ -57,7 +57,7 @@ Outputs are written under `projects/aws-mdr/outputs/` and ignored by git.
 
 ## Skills
 
-All canonical skill definitions live at `skills/`.
+Reusable skill definitions live at `skills/`. The `projects/aws-mdr/.claude/skills/` directory contains real copied skill files for direct project use after cloning.
 
 | Skill | Purpose |
 |-------|---------|
@@ -105,7 +105,7 @@ transilience-mdr-rainer/
 ├── tools/                           # Future shared utilities
 └── projects/
     └── aws-mdr/
-        ├── .claude/skills/          # Symlinks to canonical skills
+        ├── .claude/skills/          # Real skill copies for direct clone usage
         ├── examples/                # Synthetic test inputs
         └── outputs/                 # Runtime outputs, ignored except README
 ```
