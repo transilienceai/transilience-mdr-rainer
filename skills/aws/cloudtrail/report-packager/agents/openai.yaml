@@ -1,4 +1,0 @@
-interface:
-  display_name: "AWS CloudTrail Report Packager"
-  short_description: "Package CloudTrail analysis into reports"
-  default_prompt: "Use $aws-cloudtrail-report-packager to turn this CloudTrail baseline and evidence pack into a customer-facing report."

@@ -1,4 +1,0 @@
-interface:
-  display_name: "AWS CloudTrail Detection Specs"
-  short_description: "Generate portable CloudTrail detection specs"
-  default_prompt: "Use $aws-cloudtrail-detection-specs to generate portable detection specs from this CloudTrail baseline."

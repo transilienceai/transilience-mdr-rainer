@@ -1,4 +1,0 @@
-interface:
-  display_name: "AWS CloudTrail Raw Evidence Pack"
-  short_description: "Package raw CloudTrail evidence reproducibly"
-  default_prompt: "Use $aws-cloudtrail-raw-evidence-pack to build a raw CloudTrail evidence package with reproduction metadata."

@@ -4,16 +4,15 @@ Open-source Claude Code skills for authorized MDR, AWS CloudTrail investigation,
 
 ## Repository Structure
 
-- `skills/` - Canonical skill definitions.
 - `projects/` - Runnable Claude Code project environments.
-- `projects/aws-mdr/.claude/skills/` - Real copies of the AWS CloudTrail skills for direct clone usage.
+- `projects/aws-mdr/.claude/skills/` - Canonical AWS CloudTrail skill definitions for direct clone usage.
 - `scripts/` - Repository validation and maintenance scripts.
 - `.claude-plugin/` - Plugin and marketplace metadata.
 - `.github/` - Issue templates, PR template, and CI.
 
 ## Skill Selection
 
-1. Read `skills/INDEX.md`.
+1. Review `projects/aws-mdr/.claude/skills/`.
 2. Select the smallest set of skills needed for the task.
 3. Read each selected skill's `SKILL.md`.
 4. For local smoke testing, use `projects/aws-mdr/examples/run_smoke.sh`.
@@ -28,7 +27,7 @@ Open-source Claude Code skills for authorized MDR, AWS CloudTrail investigation,
 ## Validation
 
 ```bash
-python3 -m py_compile skills/aws/cloudtrail/*/scripts/*.py
+python3 -m py_compile projects/aws-mdr/.claude/skills/*/scripts/*.py
 python3 scripts/skill_linter.py
 cd projects/aws-mdr && bash examples/run_smoke.sh
 ```

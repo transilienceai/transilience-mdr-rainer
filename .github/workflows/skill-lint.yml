@@ -3,7 +3,6 @@ name: Skill Linter
 on:
   pull_request:
     paths:
-      - "skills/**"
       - "projects/**"
       - "scripts/skill_linter.py"
       - ".github/workflows/skill-lint.yml"
@@ -19,6 +18,6 @@ jobs:
         with:
           python-version: "3.11"
       - name: Compile Python scripts
-        run: python3 -m py_compile skills/aws/cloudtrail/*/scripts/*.py
+        run: python3 -m py_compile projects/aws-mdr/.claude/skills/*/scripts/*.py
       - name: Run skill linter
         run: python3 scripts/skill_linter.py

@@ -1,4 +1,0 @@
-interface:
-  display_name: "AWS CloudTrail Normalize Observations"
-  short_description: "Normalize CloudTrail records into observations"
-  default_prompt: "Use $aws-cloudtrail-normalize-observations to normalize these CloudTrail records into business-analysis observations."

@@ -1,4 +1,0 @@
-interface:
-  display_name: "AWS CloudTrail Business Baseline"
-  short_description: "Build business-as-usual CloudTrail baselines"
-  default_prompt: "Use $aws-cloudtrail-business-baseline to build a business-as-usual baseline from normalized CloudTrail observations."

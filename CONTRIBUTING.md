@@ -53,7 +53,7 @@ Public examples must be synthetic or safely anonymized.
 Run these before opening a PR:
 
 ```bash
-python3 -m py_compile skills/aws/cloudtrail/*/scripts/*.py
+python3 -m py_compile projects/aws-mdr/.claude/skills/*/scripts/*.py
 python3 scripts/skill_linter.py
 cd projects/aws-mdr && bash examples/run_smoke.sh
 ```

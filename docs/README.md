@@ -5,4 +5,4 @@ This directory holds architecture notes, workflow guides, and longer examples fo
 Start with:
 
 - [Project quickstart](../projects/aws-mdr/README.md)
-- [Skill index](../skills/INDEX.md)
+- [AWS MDR skills](../projects/aws-mdr/.claude/skills)

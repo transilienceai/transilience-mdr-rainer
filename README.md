@@ -27,7 +27,7 @@ Transilience MDR Rainer is a skills-first MDR toolkit. The initial release focus
 - Triage findings with business context and residual risk.
 - Package Markdown reports for review.
 
-The repository follows the same general architecture as `transilienceai/communitytools`: reusable skill source lives at the repo root under `skills/`, and runnable projects under `projects/` include the skill files they need directly so a plain clone works immediately.
+The repository keeps runnable MDR projects under `projects/`. The AWS MDR skills live directly in `projects/aws-mdr/.claude/skills` so a plain clone works immediately without duplicated top-level skill trees.
 
 ## Prerequisites
 
@@ -57,19 +57,19 @@ Outputs are written under `projects/aws-mdr/outputs/` and ignored by git.
 
 ## Skills
 
-Reusable skill definitions live at `skills/`. The `projects/aws-mdr/.claude/skills/` directory contains real copied skill files for direct project use after cloning.
+Reusable AWS MDR skill definitions live at `projects/aws-mdr/.claude/skills/`.
 
 | Skill | Purpose |
 |-------|---------|
-| `skills/aws/cloudtrail/lookup-collector` | Collect CloudTrail management events with AWS-native credentials. |
-| `skills/aws/cloudtrail/normalize-observations` | Normalize CloudTrail JSON, JSONL, LookupEvents, evidence-pack, and SIEM wrapper records. |
-| `skills/aws/cloudtrail/raw-evidence-pack` | Package raw CloudTrail records with reproduction metadata. |
-| `skills/aws/cloudtrail/business-baseline` | Build business-as-usual baselines from normalized observations. |
-| `skills/aws/cloudtrail/detection-specs` | Generate backend-neutral detection specifications. |
-| `skills/aws/cloudtrail/business-triage` | Convert evidence and detections into business-context findings. |
-| `skills/aws/cloudtrail/report-packager` | Assemble Markdown reports from baseline, evidence, triage, and detection artifacts. |
+| `projects/aws-mdr/.claude/skills/lookup-collector` | Collect CloudTrail management events with AWS-native credentials. |
+| `projects/aws-mdr/.claude/skills/normalize-observations` | Normalize CloudTrail JSON, JSONL, LookupEvents, evidence-pack, and SIEM wrapper records. |
+| `projects/aws-mdr/.claude/skills/raw-evidence-pack` | Package raw CloudTrail records with reproduction metadata. |
+| `projects/aws-mdr/.claude/skills/business-baseline` | Build business-as-usual baselines from normalized observations. |
+| `projects/aws-mdr/.claude/skills/detection-specs` | Generate backend-neutral detection specifications. |
+| `projects/aws-mdr/.claude/skills/business-triage` | Convert evidence and detections into business-context findings. |
+| `projects/aws-mdr/.claude/skills/report-packager` | Assemble Markdown reports from baseline, evidence, triage, and detection artifacts. |
 
-See [skills/INDEX.md](skills/INDEX.md) for routing guidance.
+Use the project skill directories above for routing guidance.
 
 ## AWS Credentials
 
@@ -93,19 +93,10 @@ transilience-mdr-rainer/
 ├── docs/                            # Longer documentation
 ├── formats/                         # Future shared report formats
 ├── scripts/                         # Repo maintenance and linting scripts
-├── skills/                          # Canonical skill definitions
-│   └── aws/cloudtrail/
-│       ├── lookup-collector/
-│       ├── normalize-observations/
-│       ├── raw-evidence-pack/
-│       ├── business-baseline/
-│       ├── detection-specs/
-│       ├── business-triage/
-│       └── report-packager/
 ├── tools/                           # Future shared utilities
 └── projects/
     └── aws-mdr/
-        ├── .claude/skills/          # Real skill copies for direct clone usage
+        ├── .claude/skills/          # Canonical AWS MDR skill definitions
         ├── examples/                # Synthetic test inputs
         └── outputs/                 # Runtime outputs, ignored except README
 ```
@@ -113,7 +104,7 @@ transilience-mdr-rainer/
 ## Development Checks
 
 ```bash
-python3 -m py_compile skills/aws/cloudtrail/*/scripts/*.py
+python3 -m py_compile projects/aws-mdr/.claude/skills/*/scripts/*.py
 python3 scripts/skill_linter.py
 cd projects/aws-mdr && bash examples/run_smoke.sh
 ```
