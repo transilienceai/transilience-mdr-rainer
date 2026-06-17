@@ -9,7 +9,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILLS = ROOT / "skills"
+SKILLS = ROOT / "projects" / "aws-mdr" / ".claude" / "skills"
 
 PRIVATE_PATTERNS = [
     re.compile(r"/Users/"),
@@ -58,7 +58,7 @@ def check_private_markers(path: Path) -> None:
 
 
 def main() -> None:
-    for skill_dir in sorted(p for p in (SKILLS / "aws" / "cloudtrail").iterdir() if p.is_dir()):
+    for skill_dir in sorted(p for p in SKILLS.iterdir() if p.is_dir()):
         check_skill(skill_dir)
     for path in ROOT.rglob("*"):
         check_private_markers(path)
