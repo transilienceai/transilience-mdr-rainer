@@ -18,6 +18,12 @@ python3 ../../skills/aws/cloudtrail/raw-evidence-pack/scripts/package_raw_eviden
 
 `--case-config` is optional. Without it, the packager exports all CloudTrail-shaped records into a single `all_events` case.
 
+## Input format requirement
+
+This script requires **raw CloudTrail format** — records must contain `CloudTrailEvent` (LookupEvents wrapper), `eventVersion` + `eventName` (raw CloudTrail JSON), or a `cloudtrail_event` / `decoded_payload` SIEM wrapper.
+
+Pre-flattened exports (flat `event_name`, `username`, `source_ip` fields) are **not supported** and will produce an evidence pack with zero exported events. For pre-flattened data, skip this skill and pass the adapted observations JSONL directly to `business-triage`. See [use-cases/02-preflattened-exports](../../../use-cases/02-preflattened-exports/README.md).
+
 ## Evidence Rules
 
 - Preserve raw CloudTrail event objects under `cloudtrail_event`.

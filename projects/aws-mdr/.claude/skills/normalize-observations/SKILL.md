@@ -9,7 +9,7 @@ Use this skill to convert raw CloudTrail-shaped records into one normalized JSON
 
 ## Quick Start
 
-Run the bundled normalizer when the input is file-based:
+Run the bundled normalizer when the input is **raw CloudTrail format**:
 
 ```bash
 python3 ../../skills/aws/cloudtrail/normalize-observations/scripts/normalize_cloudtrail.py \
@@ -24,6 +24,22 @@ The script accepts:
 - JSON arrays or JSONL streams
 - evidence-pack wrappers with `cloudtrail_event`
 - SIEM wrappers with `decoded_payload`
+
+## Pre-flattened exports — use the adapter instead
+
+If the input was already exported and flattened by a SIEM, third-party collector, or ETL (top-level keys are `event_name`, `username`, `source_ip`, `aws_region` rather than `eventVersion`, `userIdentity`, `eventName`), `normalize_cloudtrail.py` will produce zero observations because the expected nesting is absent.
+
+Use the adapter script instead:
+
+```bash
+python3 ../../skills/aws/cloudtrail/normalize-observations/scripts/adapt_preflattened.py \
+  --input path/to/export_a.json path/to/export_b.json \
+  --output normalized_observations.jsonl
+```
+
+The adapter maps flat fields to the observation schema and derives `risk`, `actor_type`, `business_risk_category`, and `pattern_category` using the same logic as the normalizer. Its output is consumed by all downstream skills identically.
+
+See [use-cases/02-preflattened-exports](../../../use-cases/02-preflattened-exports/README.md) for the full walkthrough and field mapping reference.
 
 ## Workflow
 
@@ -43,6 +59,6 @@ The script accepts:
 
 ## Output
 
-The script writes one JSON object per line with the stable observation schema. Downstream skills expect these fields:
+Both scripts write one JSON object per line with the stable observation schema. Downstream skills expect these fields:
 
 `event_id`, `event_time`, `account_id`, `region`, `event_name`, `event_source`, `actor`, `actor_type`, `source_ip`, `user_agent`, `resources`, `error_code`, `risk`, `business_risk_category`, `pattern_category`.
