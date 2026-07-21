@@ -19,6 +19,8 @@ python3 ../../skills/aws/cloudtrail/report-packager/scripts/package_markdown_rep
   --output cloudtrail_report.md
 ```
 
+**`--output` must be a file path, not a directory.** The script writes the Markdown report directly to this path. Passing a directory path raises `IsADirectoryError`. All optional arguments (`--evidence-pack`, `--triage`, `--detection-specs`) may be omitted; the report will include whatever is provided.
+
 ## Report Requirements
 
 - Lead with business impact and residual risk.
