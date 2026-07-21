@@ -1,0 +1,65 @@
+# Generic indicators. These are not proof by themselves.
+providers:
+  - openai
+  - anthropic
+  - claude
+  - gemini
+  - google-generativeai
+  - vertexai
+  - bedrock
+  - cohere
+  - mistral
+  - groq
+  - huggingface
+  - replicate
+  - together
+  - openrouter
+  - perplexity
+agent_frameworks:
+  - langchain
+  - langgraph
+  - llamaindex
+  - llama-index
+  - crewai
+  - autogen
+  - semantic-kernel
+  - haystack
+  - dspy
+mcp:
+  - mcpServers
+  - modelcontextprotocol
+  - "@modelcontextprotocol"
+  - mcp-server
+rag_vector:
+  - pinecone
+  - qdrant
+  - weaviate
+  - chroma
+  - milvus
+  - zilliz
+  - pgvector
+  - opensearch
+  - elasticsearch
+  - vectorstore
+observability_eval:
+  - langsmith
+  - langfuse
+  - helicone
+  - braintrust
+  - promptlayer
+  - weights-and-biases
+  - wandb
+  - mlflow
+secret_names:
+  - OPENAI_API_KEY
+  - ANTHROPIC_API_KEY
+  - GOOGLE_API_KEY
+  - COHERE_API_KEY
+  - MISTRAL_API_KEY
+  - PINECONE_API_KEY
+  - QDRANT_API_KEY
+  - LANGCHAIN_API_KEY
+notes:
+  - Match case-insensitively across code, manifests, workflow files, Dockerfiles, and prompt/config files.
+  - Dependency hits are lower confidence until supported by direct imports, config, or runtime calls.
+  - MCP config is high-signal for tool exposure even without direct model-provider evidence.

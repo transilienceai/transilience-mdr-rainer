@@ -1,0 +1,4 @@
+interface:
+  display_name: "Google Workspace Security Weekly Report"
+  short_description: "Build weekly Workspace security reports."
+  default_prompt: "Use $google-workspace-security-weekly-report to create a weekly Google Workspace security report from exported audit logs."

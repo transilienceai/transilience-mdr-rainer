@@ -1,0 +1,44 @@
+# Generic app-name indicators. These are not proof by themselves.
+patterns:
+  ai_assistants:
+    - openai
+    - chatgpt
+    - claude
+    - anthropic
+    - perplexity
+    - poe
+  google_ai:
+    - gemini
+    - google ai
+    - ai studio
+    - test kitchen
+  meeting_note_takers:
+    - read ai
+    - otter
+    - fireflies
+    - granola
+    - fathom
+    - tl;dv
+  coding_agents:
+    - cursor
+    - copilot
+    - replit
+    - codeium
+    - tabnine
+  productivity_ai:
+    - notion
+    - figma
+    - canva
+    - gamma
+    - email pulse
+    - workspace studio
+  automation_agents:
+    - zapier
+    - make
+    - n8n
+    - agent
+    - automation
+notes:
+  - Match names case-insensitively across app name, client ID labels, event name, and scope text.
+  - Confirm current app state in Admin Console before remediation.
+  - Do not treat generic words like studio or agent as high confidence without supporting context.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Shadow AI Detection"
+  short_description: "Detect AI usage in source repos."
+  default_prompt: "Use $git-shadow-ai-detection to analyze Git repositories for shadow AI usage, MCP, prompts, RAG, agents, and AI supply-chain indicators."
