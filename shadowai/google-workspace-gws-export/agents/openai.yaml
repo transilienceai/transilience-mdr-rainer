@@ -1,0 +1,4 @@
+interface:
+  display_name: "Google Workspace GWS Export"
+  short_description: "Export Google Workspace audit evidence safely."
+  default_prompt: "Use $google-workspace-gws-export to export Google Workspace Admin Reports evidence for a scoped audit window."

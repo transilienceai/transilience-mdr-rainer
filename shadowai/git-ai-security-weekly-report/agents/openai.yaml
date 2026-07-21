@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git AI Security Weekly Report"
+  short_description: "Report on Git shadow AI findings."
+  default_prompt: "Use $git-ai-security-weekly-report to build a weekly security report from Git shadow AI detection outputs."

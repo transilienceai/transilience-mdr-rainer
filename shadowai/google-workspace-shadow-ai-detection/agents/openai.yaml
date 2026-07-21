@@ -1,0 +1,4 @@
+interface:
+  display_name: "Google Workspace Shadow AI Detection"
+  short_description: "Detect shadow AI usage in Workspace logs."
+  default_prompt: "Use $google-workspace-shadow-ai-detection to analyze Google Workspace audit evidence for shadow AI and OAuth risk."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS VPC Flow AI Security Report"
+  short_description: "Report on VPC Flow Log AI findings."
+  default_prompt: "Use $aws-vpc-flow-ai-security-report to build a security report from VPC Flow Log AI detection outputs."

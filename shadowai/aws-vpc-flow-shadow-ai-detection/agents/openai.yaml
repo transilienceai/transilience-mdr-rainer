@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS VPC Flow Shadow AI Detection"
+  short_description: "Detect AI usage from VPC Flow Logs."
+  default_prompt: "Use $aws-vpc-flow-shadow-ai-detection to analyze VPC Flow Logs for model-provider, RAG, agent, and internal inference traffic."
