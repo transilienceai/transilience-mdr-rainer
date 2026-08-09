@@ -1,0 +1,142 @@
+{
+  "schema": "aws_attack_model/v1",
+  "customer": "SAMPLE-ONLY-not-real",
+  "collected_at": "2026-01-01T00:00:00Z",
+  "source_skill": "sample-fixture",
+  "_note": "ILLUSTRATIVE SAMPLE FIXTURE ONLY. Not real AWS data. Account id 111111111111 and all resource names are synthetic and exist solely to smoke-test the attack-graph pipeline.",
+  "accounts": [
+    {
+      "account_id": "111111111111",
+      "label": "sample-prod",
+      "env": "prod",
+      "is_management": false,
+      "org_id": null,
+      "notes": "synthetic sample account"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "internet",
+      "type": "internet",
+      "account_id": "internet",
+      "name": "internet",
+      "arn": null,
+      "exposure": {"internet_facing": true, "ports": [], "cidrs": ["0.0.0.0/0"]},
+      "attributes": {}
+    },
+    {
+      "id": "s3_bucket:111111111111:sample-public-bucket",
+      "type": "s3_bucket",
+      "account_id": "111111111111",
+      "name": "sample-public-bucket",
+      "arn": "arn:aws:s3:::sample-public-bucket",
+      "exposure": {"internet_facing": true, "ports": [443], "cidrs": ["0.0.0.0/0"]},
+      "attributes": {"public": true, "block_public_access": false}
+    },
+    {
+      "id": "access_key:111111111111:AKIA-SAMPLE-0001",
+      "type": "access_key",
+      "account_id": "111111111111",
+      "name": "AKIA-SAMPLE-0001",
+      "arn": null,
+      "exposure": {"internet_facing": false, "ports": [], "cidrs": []},
+      "attributes": {"age_days": 640, "multiple_active": false, "owner": "iam_user:111111111111:sample-app-user"}
+    },
+    {
+      "id": "iam_user:111111111111:sample-deployer",
+      "type": "iam_user",
+      "account_id": "111111111111",
+      "name": "sample-deployer",
+      "arn": "arn:aws:iam::111111111111:user/sample-deployer",
+      "exposure": {"internet_facing": false, "ports": [], "cidrs": []},
+      "attributes": {"admin_like": true, "managed_policies": ["IAMFullAccess"], "console_login": true, "mfa": false}
+    }
+  ],
+  "edges": [
+    {
+      "src": "internet",
+      "dst": "s3_bucket:111111111111:sample-public-bucket",
+      "type": "exposes",
+      "attributes": {"primitive_id": "ia_public_s3_read", "via": "s3", "condition": null},
+      "evidence": {"source": "config", "id": "SAMPLE-EXPOSE-1"}
+    },
+    {
+      "src": "access_key:111111111111:AKIA-SAMPLE-0001",
+      "dst": "s3_bucket:111111111111:sample-public-bucket",
+      "type": "can_reach",
+      "attributes": {"primitive_id": null, "via": "s3:GetObject", "condition": null},
+      "evidence": {"source": "iam", "id": "SAMPLE-REACH-1"}
+    },
+    {
+      "src": "iam_user:111111111111:sample-deployer",
+      "dst": "iam_user:111111111111:sample-deployer",
+      "type": "can_escalate",
+      "attributes": {"primitive_id": "pe_iam_fullaccess", "via": "iam", "condition": "IAMFullAccess"},
+      "evidence": {"source": "iam", "id": "SAMPLE-ESCALATE-1"}
+    },
+    {
+      "src": "iam_user:111111111111:sample-deployer",
+      "dst": "s3_bucket:111111111111:sample-public-bucket",
+      "type": "can_reach",
+      "attributes": {"primitive_id": null, "via": "s3:GetObject", "condition": null},
+      "evidence": {"source": "iam", "id": "SAMPLE-REACH-2"}
+    }
+  ],
+  "findings": [
+    {
+      "id": "SAMPLE-F-1",
+      "account_id": "111111111111",
+      "control": "S3_PUBLIC_BUCKET_ACCESS",
+      "severity": "high",
+      "resource": "arn:aws:s3:::sample-public-bucket",
+      "internet_facing": true,
+      "primitive_ids": [],
+      "mitre": [],
+      "raw_source": "sample"
+    },
+    {
+      "id": "SAMPLE-F-2",
+      "account_id": "111111111111",
+      "control": "IAM_ACTIVE_ACCESS_KEY",
+      "severity": "high",
+      "resource": "AKIA-SAMPLE-0001",
+      "internet_facing": false,
+      "primitive_ids": [],
+      "mitre": [],
+      "raw_source": "sample"
+    },
+    {
+      "id": "SAMPLE-F-3",
+      "account_id": "111111111111",
+      "control": "IAM_FULL_ACCESS",
+      "severity": "critical",
+      "resource": "arn:aws:iam::111111111111:user/sample-deployer",
+      "internet_facing": false,
+      "primitive_ids": [],
+      "mitre": [],
+      "raw_source": "sample"
+    }
+  ],
+  "crown_jewels": [
+    {
+      "id": "s3_bucket:111111111111:sample-public-bucket",
+      "account_id": "111111111111",
+      "type": "s3_bucket",
+      "name": "sample-public-bucket",
+      "value_score": 90,
+      "data_class": "pii",
+      "size": "sample",
+      "protections": [],
+      "reachable_by": ["internet", "access_key:111111111111:AKIA-SAMPLE-0001", "iam_user:111111111111:sample-deployer"]
+    }
+  ],
+  "active_threats": [],
+  "gaps": [
+    {
+      "area": "sample",
+      "reason": "This is a synthetic smoke-test fixture; real collection would enumerate the full estate.",
+      "accounts": ["111111111111"],
+      "recommended_collection": "Run the real aws-attack-surface-collector / aws-identity-trust-collector."
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS Attack Graph Builder"
+  short_description: "Merge collector envelopes into one attack graph"
+  default_prompt: "Use $aws-attack-graph-builder to merge these aws_attack_model/v1 collector envelopes into a single de-duplicated attack_model.json ready for chain enumeration."

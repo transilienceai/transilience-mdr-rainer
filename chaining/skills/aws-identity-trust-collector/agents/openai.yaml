@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS Identity & Trust Collector"
+  short_description: "Deep IAM/identity/trust graph: privesc + cross-account pivots"
+  default_prompt: "Use $aws-identity-trust-collector to collect deep IAM identities, access keys, MFA, role trust policies, permission boundaries, root and Organizations posture per account and emit an aws_attack_model/v1 envelope with has_credential, can_assume, can_passrole, trusts, and can_escalate edges."

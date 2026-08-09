@@ -1,4 +1,4 @@
-# Transilience MDR Rainer
+# Cloud Detection
 
 <div align="center">
 
@@ -17,7 +17,7 @@
 
 ## Overview
 
-Transilience MDR Rainer is a skills-first MDR toolkit. The initial release focuses on AWS CloudTrail workflows:
+Cloud Detection is a skills-first MDR toolkit. The initial release focuses on AWS CloudTrail workflows:
 
 - Collect reproducible CloudTrail management events.
 - Normalize CloudTrail-shaped records into stable observations.
@@ -27,7 +27,7 @@ Transilience MDR Rainer is a skills-first MDR toolkit. The initial release focus
 - Triage findings with business context and residual risk.
 - Package Markdown reports for review.
 
-The repository keeps runnable MDR projects under `projects/`. The AWS MDR skills live directly in `projects/aws-mdr/.claude/skills` so a plain clone works immediately without duplicated top-level skill trees.
+The repository keeps runnable MDR projects under `projects/`. Skills are organized by lifecycle stage under `detection/`, `chaining/`, `investigation/`, `collection/`, and `reporting/` (each a plugin in `.claude-plugin/marketplace.json`). The runnable `projects/aws-mdr/` demo symlinks to the canonical CloudTrail skills so a plain clone still works.
 
 ## Prerequisites
 
@@ -39,8 +39,8 @@ The repository keeps runnable MDR projects under `projects/`. The AWS MDR skills
 ## Quick Start
 
 ```bash
-git clone https://github.com/transilienceai/transilience-mdr-rainer.git
-cd transilience-mdr-rainer
+git clone https://github.com/transilienceai/cloud-detection.git
+cd cloud-detection
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -57,17 +57,17 @@ Outputs are written under `projects/aws-mdr/outputs/` and ignored by git.
 
 ## Skills
 
-Reusable AWS MDR skill definitions live at `projects/aws-mdr/.claude/skills/`.
+Reusable skill definitions live under the category folders (`detection/`, `chaining/`, `investigation/`, `collection/`, `reporting/`); the `projects/aws-mdr/` demo symlinks to the CloudTrail subset.
 
 | Skill | Purpose |
 |-------|---------|
-| `projects/aws-mdr/.claude/skills/lookup-collector` | Collect CloudTrail management events with AWS-native credentials. |
-| `projects/aws-mdr/.claude/skills/normalize-observations` | Normalize CloudTrail JSON, JSONL, LookupEvents, evidence-pack, and SIEM wrapper records. |
-| `projects/aws-mdr/.claude/skills/raw-evidence-pack` | Package raw CloudTrail records with reproduction metadata. |
-| `projects/aws-mdr/.claude/skills/business-baseline` | Build business-as-usual baselines from normalized observations. |
-| `projects/aws-mdr/.claude/skills/detection-specs` | Generate backend-neutral detection specifications. |
-| `projects/aws-mdr/.claude/skills/business-triage` | Convert evidence and detections into business-context findings. |
-| `projects/aws-mdr/.claude/skills/report-packager` | Assemble Markdown reports from baseline, evidence, triage, and detection artifacts. |
+| `collection/skills/cloudtrail-lookup-collector` | Collect CloudTrail management events with AWS-native credentials. |
+| `collection/skills/cloudtrail-normalize-observations` | Normalize CloudTrail JSON, JSONL, LookupEvents, evidence-pack, and SIEM wrapper records. |
+| `investigation/skills/cloudtrail-raw-evidence-pack` | Package raw CloudTrail records with reproduction metadata. |
+| `detection/skills/cloudtrail-business-baseline` | Build business-as-usual baselines from normalized observations. |
+| `detection/skills/cloudtrail-detection-specs` | Generate backend-neutral detection specifications. |
+| `investigation/skills/cloudtrail-business-triage` | Convert evidence and detections into business-context findings. |
+| `reporting/skills/cloudtrail-report-packager` | Assemble Markdown reports from baseline, evidence, triage, and detection artifacts. |
 
 Use the project skill directories above for routing guidance.
 
@@ -84,7 +84,7 @@ No customer-specific brokers, secrets, or private account configurations are inc
 ## Architecture
 
 ```text
-transilience-mdr-rainer/
+cloud-detection/
 ├── .claude-plugin/                  # Plugin and marketplace metadata
 ├── .github/                         # Issue templates, PR template, CI
 ├── CLAUDE.md                        # Repository operating instructions
@@ -104,7 +104,7 @@ transilience-mdr-rainer/
 ## Development Checks
 
 ```bash
-python3 -m py_compile projects/aws-mdr/.claude/skills/*/scripts/*.py
+python3 -m py_compile {detection,investigation,collection,reporting}/skills/*/scripts/*.py
 python3 scripts/skill_linter.py
 cd projects/aws-mdr && bash examples/run_smoke.sh
 ```

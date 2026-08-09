@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS Red-Team Report Packager"
+  short_description: "Render enumerated AWS attack chains into a Markdown catalog + Transilience PDF"
+  default_prompt: "Use $aws-redteam-report-packager to render this aws_attack_chains/v1 file into a red-team Markdown attack-chain catalog and a Transilience-styled PDF."

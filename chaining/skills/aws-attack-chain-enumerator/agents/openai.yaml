@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS Attack Chain Enumerator"
+  short_description: "Enumerate scored kill chains and techniques"
+  default_prompt: "Use $aws-attack-chain-enumerator to enumerate ranked kill chains, the technique catalog, and root causes (aws_attack_chains/v1) from this merged attack model."

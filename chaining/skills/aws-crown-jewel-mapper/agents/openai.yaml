@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS Crown Jewel Mapper"
+  short_description: "Rank high-value AWS targets and the edges that reach them"
+  default_prompt: "Use $aws-crown-jewel-mapper to enumerate and rank the AWS crown jewels (S3, databases, secrets, KMS, Bedrock/SageMaker, backups, source/CI-CD, identity stores) with value scores and connectivity edges, emitting the aws_attack_model/v1 envelope."

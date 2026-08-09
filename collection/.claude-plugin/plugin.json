@@ -1,0 +1,18 @@
+{
+  "name": "cloud-collection",
+  "version": "0.1.0",
+  "description": "Shared collectors and exporters that feed detection and investigation: AWS CloudTrail lookup collection and normalization, and Google Workspace admin-report export.",
+  "author": {
+    "name": "Transilience AI",
+    "url": "https://github.com/transilienceai"
+  },
+  "repository": "https://github.com/transilienceai/cloud-detection",
+  "license": "MIT",
+  "keywords": [
+    "collection",
+    "aws",
+    "cloudtrail",
+    "google-workspace",
+    "evidence"
+  ]
+}

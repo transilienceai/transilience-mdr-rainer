@@ -10,8 +10,11 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILL_ROOTS = [
-    ROOT / "projects" / "aws-mdr" / ".claude" / "skills",
-    ROOT / "shadowai",
+    ROOT / "detection" / "skills",
+    ROOT / "investigation" / "skills",
+    ROOT / "collection" / "skills",
+    ROOT / "reporting" / "skills",
+    ROOT / "chaining" / "skills",
 ]
 
 PRIVATE_PATTERNS = [
@@ -48,6 +51,8 @@ def check_private_markers(path: Path) -> None:
     if path == Path(__file__).resolve():
         return
     if ".git" in path.parts:
+        return
+    if "outputs" in path.parts:  # gitignored generated artifacts, not shipped
         return
     if path.is_dir() or path.suffix in {".pyc", ".png", ".jpg", ".jpeg", ".gif"}:
         return

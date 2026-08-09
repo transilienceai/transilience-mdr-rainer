@@ -1,0 +1,17 @@
+{
+  "name": "cloud-reporting",
+  "version": "0.1.0",
+  "description": "Cross-cutting report packagers that turn CloudTrail and shadow-AI findings into Markdown, CSV, and JSON reporting artifacts for MDR and security review.",
+  "author": {
+    "name": "Transilience AI",
+    "url": "https://github.com/transilienceai"
+  },
+  "repository": "https://github.com/transilienceai/cloud-detection",
+  "license": "MIT",
+  "keywords": [
+    "reporting",
+    "mdr",
+    "aws",
+    "shadow-ai"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "name": "cloud-investigation",
+  "version": "0.1.0",
+  "description": "Later-moment (post-incident) examination: AWS CloudTrail raw-evidence packaging and business-context triage. Home for the broader AWS incident-response and forensics suite.",
+  "author": {
+    "name": "Transilience AI",
+    "url": "https://github.com/transilienceai"
+  },
+  "repository": "https://github.com/transilienceai/cloud-detection",
+  "license": "MIT",
+  "keywords": [
+    "incident-response",
+    "forensics",
+    "investigation",
+    "triage",
+    "aws",
+    "dfir"
+  ]
+}
