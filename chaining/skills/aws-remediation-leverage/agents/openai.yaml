@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS Remediation Leverage"
+  short_description: "Rank fixes by attack chains severed"
+  default_prompt: "Use $aws-remediation-leverage to rank which AWS remediations break the most attack chains and produce a prioritized do-in-this-order roadmap."
