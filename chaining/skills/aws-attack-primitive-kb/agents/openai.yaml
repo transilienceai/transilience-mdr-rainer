@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS Attack-Primitive Knowledge Base"
+  short_description: "Tag attack-model findings with primitives + MITRE; grow the KB"
+  default_prompt: "Use $aws-attack-primitive-kb to tag this attack model's findings with attack primitives and MITRE techniques, report tactic coverage, and validate the knowledge base."

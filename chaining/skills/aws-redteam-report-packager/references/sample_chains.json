@@ -1,0 +1,206 @@
+{
+  "schema": "aws_attack_chains/v1",
+  "metadata": {
+    "customer": "Example Corp",
+    "generated_at": "2026-01-15T00:00:00Z",
+    "account_count": 3,
+    "node_count": 42,
+    "edge_count": 61,
+    "technique_count": 6,
+    "kill_chain_count": 2,
+    "finding_count": 18,
+    "crown_jewel_count": 2,
+    "org_id": "o-example00",
+    "management_account_id": "111111111111",
+    "evidence_basis": "Generic sample: attack-surface + identity-trust + reachability collectors merged by aws-attack-graph-builder; enumerated by the chain enumerator.",
+    "role_name": "TransilienceComplianceRole"
+  },
+  "kill_chains": [
+    {
+      "id": "KC-1",
+      "title": "Public S3 bucket -> harvested key -> data-store exfiltration",
+      "tactic_sequence": ["initial-access", "credential-access", "collection", "exfiltration"],
+      "steps": [
+        "Anonymous read public bucket",
+        "Harvest embedded static key",
+        "ListObjects data bucket",
+        "GetObject sweep",
+        "Egress to external IP"
+      ],
+      "objective": "Bulk theft of the primary object-store data corpus",
+      "crown_jewel_id": "s3_bucket:222222222222:example-data-lake",
+      "severity": "critical",
+      "score": 0.91,
+      "live": true,
+      "misconfigurations": [
+        "Public-readable bucket example-public-assets (222222222222)",
+        "Long-lived static access key embedded in public object",
+        "S3FullAccess attached to the harvested principal",
+        "No object-level access logging on example-data-lake"
+      ],
+      "evidence": "GuardDuty Exfiltration:S3/AnomalousBehavior observed on example-data-lake (sample evidence record ADT-1).",
+      "node_path": [
+        "internet:internet",
+        "s3_bucket:222222222222:example-public-assets",
+        "access_key:222222222222:AKIAEXAMPLESAMPLE1",
+        "s3_bucket:222222222222:example-data-lake"
+      ]
+    },
+    {
+      "id": "KC-2",
+      "title": "Public admin-port host -> instance role -> account pivot",
+      "tactic_sequence": ["initial-access", "credential-access", "privilege-escalation", "lateral-movement"],
+      "steps": [
+        "SSH-open EC2 host",
+        "Brute-force / key reuse",
+        "Read IMDS instance role",
+        "Use creds off-box",
+        "Assume org role -> account admin"
+      ],
+      "objective": "Turn one internet-exposed host into account-level administrative access",
+      "crown_jewel_id": "iam_role:333333333333:OrganizationAccountAccessRole",
+      "severity": "high",
+      "score": 0.77,
+      "live": false,
+      "misconfigurations": [
+        "EC2 host example-bastion with 22/tcp open to 0.0.0.0/0 (333333333333)",
+        "IMDSv1 enabled (HttpTokens optional)",
+        "Instance profile grants broad EC2 and SSM permissions",
+        "OrganizationAccountAccessRole trusts the management account with no condition"
+      ],
+      "evidence": "",
+      "node_path": [
+        "internet:internet",
+        "ec2_instance:333333333333:example-bastion",
+        "iam_role:333333333333:example-bastion-role",
+        "iam_role:333333333333:OrganizationAccountAccessRole"
+      ]
+    }
+  ],
+  "techniques": [
+    {
+      "id": "T-001",
+      "number": 1,
+      "category": "A. Initial Access",
+      "tactic": "initial-access",
+      "title": "Anonymous read of public S3 buckets",
+      "chain": "list/get objects with no authentication",
+      "misconfigurations": ["3 public-readable buckets across 2 accounts, incl. example-public-assets"],
+      "mitre": ["T1530"],
+      "severity": "high",
+      "live": true,
+      "refs": {"account_ids": ["222222222222"], "resources": ["example-public-assets", "example-ci-artifacts"]}
+    },
+    {
+      "id": "T-002",
+      "number": 2,
+      "category": "A. Initial Access",
+      "tactic": "initial-access",
+      "title": "SSH/RDP brute-force on admin-port-open EC2",
+      "chain": "enumerate 22/3389 open hosts -> brute/spray -> shell",
+      "misconfigurations": ["example-bastion 22/tcp open to 0.0.0.0/0 (333333333333)"],
+      "mitre": ["T1110", "T1190"],
+      "severity": "high",
+      "live": false,
+      "refs": {"account_ids": ["333333333333"], "resources": ["example-bastion"]}
+    },
+    {
+      "id": "T-003",
+      "number": 3,
+      "category": "B. Credential Access",
+      "tactic": "credential-access",
+      "title": "Steal long-lived static access keys",
+      "chain": "reuse durable keys harvested from public objects",
+      "misconfigurations": ["Static key embedded in a public object; key age > 400 days; never rotated"],
+      "mitre": ["T1552"],
+      "severity": "critical",
+      "live": true,
+      "refs": {"account_ids": ["222222222222"], "resources": ["AKIAEXAMPLESAMPLE1"]}
+    },
+    {
+      "id": "T-004",
+      "number": 4,
+      "category": "B. Credential Access",
+      "tactic": "credential-access",
+      "title": "Harvest instance-role credentials via IMDS/SSRF",
+      "chain": "SSRF or on-box read of IMDS -> instance role creds",
+      "misconfigurations": ["IMDSv1 enabled on example-bastion; instance profile over-scoped"],
+      "mitre": ["T1552.005"],
+      "severity": "high",
+      "live": false,
+      "refs": {"account_ids": ["333333333333"], "resources": ["example-bastion-role"]}
+    },
+    {
+      "id": "T-005",
+      "number": 5,
+      "category": "D. Lateral Movement",
+      "tactic": "lateral-movement",
+      "title": "OrganizationAccountAccessRole into member accounts",
+      "chain": "assume org role from management account -> admin everywhere",
+      "misconfigurations": ["OrganizationAccountAccessRole trusts management account 111111111111 in all member accounts"],
+      "mitre": ["T1078.004"],
+      "severity": "high",
+      "live": false,
+      "refs": {"account_ids": ["333333333333", "222222222222"], "resources": ["OrganizationAccountAccessRole"]}
+    },
+    {
+      "id": "T-006",
+      "number": 6,
+      "category": "D. Lateral Movement",
+      "tactic": "lateral-movement",
+      "title": "Reuse harvested keys across accounts (S3FullAccess)",
+      "chain": "use S3FullAccess key against buckets in other accounts",
+      "misconfigurations": ["S3FullAccess attached to a shared automation principal reachable from 2 accounts"],
+      "mitre": ["T1078"],
+      "severity": "medium",
+      "live": false,
+      "refs": {"account_ids": ["222222222222", "333333333333"], "resources": ["example-data-lake"]}
+    }
+  ],
+  "root_causes": [
+    {
+      "class": "Public S3 buckets",
+      "scope": "3 buckets across 2 accounts (incl. CI artifacts)",
+      "count": 3,
+      "feeds": [1, 3]
+    },
+    {
+      "class": "EC2 admin ports open to 0.0.0.0/0",
+      "scope": "1 host (SSH) in 333333333333",
+      "count": 1,
+      "feeds": [2, 4]
+    },
+    {
+      "class": "Org-wide OrganizationAccountAccessRole trust",
+      "scope": "trusted by management account in all member accounts",
+      "count": 3,
+      "feeds": [5, 6]
+    }
+  ],
+  "active_threats": [
+    {
+      "id": "ADT-1",
+      "account_id": "222222222222",
+      "finding_type": "Exfiltration:S3/AnomalousBehavior",
+      "severity": "high",
+      "resource": "example-data-lake",
+      "indicators": ["203.0.113.10", "AKIAEXAMPLESAMPLE1"],
+      "first_seen": "2026-01-10T14:22:00Z",
+      "maps_to_nodes": ["s3_bucket:222222222222:example-data-lake"]
+    }
+  ],
+  "gaps": [
+    {
+      "area": "IMDSv1 (HttpTokens) state",
+      "reason": "Instance metadata options were not collected; IMDSv1 exposure is inferred, not measured.",
+      "accounts": ["333333333333"],
+      "recommended_collection": "aws ec2 describe-instances --query 'Reservations[].Instances[].MetadataOptions'"
+    },
+    {
+      "area": "S3 object-level access logging",
+      "reason": "Access-log bucket read was denied, so the exact exfiltrated object list is unrecoverable.",
+      "accounts": ["222222222222"],
+      "recommended_collection": "Enable and read S3 server access logs / CloudTrail S3 data events on example-data-lake"
+    }
+  ]
+}

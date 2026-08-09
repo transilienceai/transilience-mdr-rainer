@@ -1,0 +1,1732 @@
+{
+  "schema": "aws_attack_primitive_kb/v1",
+  "version": "1.1.0",
+  "description": "Generic AWS attack-primitive knowledge base: maps a misconfiguration signature to an attack primitive, MITRE ATT&CK technique, tactic, what it enables downstream, and remediation. Extend this file each engagement to make the enumerator find more/deeper chains. Signatures reference CSPM control ids and/or normalized conditions; the mapper tags findings/nodes by matching `signature.controls` and `signature.conditions`.",
+  "primitives": [
+    {
+      "id": "ia_public_s3_read",
+      "name": "Anonymous read of public S3 bucket",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1530"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "S3_PUBLIC_BUCKET_ACCESS",
+          "S3_PUBLIC_POLICY",
+          "S3_PUBLIC_ACL",
+          "S3_BLOCK_PUBLIC_ACCESS_DISABLED"
+        ],
+        "conditions": [
+          "node.type==s3_bucket && exposure.internet_facing"
+        ]
+      },
+      "enables": [
+        "ca_secrets_in_public_bucket",
+        "co_s3_list_recon",
+        "co_s3_bulk_get"
+      ],
+      "remediation": "Enable Block Public Access account+bucket; remove public ACL/policy; add bucket policy deny for non-org principals."
+    },
+    {
+      "id": "ia_public_db",
+      "name": "Publicly-accessible managed database",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1190"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [
+          "RDS_PUBLIC_ACCESS",
+          "REDSHIFT_PUBLIC",
+          "DOCDB_PUBLIC",
+          "ELASTICACHE_PUBLIC"
+        ],
+        "conditions": [
+          "node.type in [rds_instance,redshift,documentdb,elasticache] && attributes.publicly_accessible"
+        ]
+      },
+      "enables": [
+        "co_db_dump",
+        "ca_db_creds_from_db"
+      ],
+      "remediation": "Set PubliclyAccessible=false; move to private subnets; restrict SG to app tier; require IAM/TLS auth."
+    },
+    {
+      "id": "ia_admin_port_open",
+      "name": "SSH/RDP admin port open to 0.0.0.0/0",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1190",
+        "T1110"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "EC2_PUBLIC_ADMIN_PORT"
+        ],
+        "conditions": [
+          "exposure.ports intersects [22,3389] && exposure.cidrs contains 0.0.0.0/0"
+        ]
+      },
+      "enables": [
+        "ca_imds_theft",
+        "pe_instance_role_broad"
+      ],
+      "remediation": "Restrict SG to VPN/SSM; adopt SSM Session Manager; remove 0.0.0.0/0 on 22/3389."
+    },
+    {
+      "id": "ia_public_eks",
+      "name": "EKS API endpoint public to 0.0.0.0/0",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1190"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "EKS_PUBLIC_API"
+        ],
+        "conditions": [
+          "node.type==eks_cluster && exposure.cidrs contains 0.0.0.0/0"
+        ]
+      },
+      "enables": [
+        "ca_k8s_secrets",
+        "pe_k8s_privileged",
+        "ps_eks_daemonset"
+      ],
+      "remediation": "Set endpoint private or restrict publicAccessCidrs; enable authenticator + RBAC least privilege."
+    },
+    {
+      "id": "ia_public_web_alb",
+      "name": "Internet-facing app on ALB (exploit/SSRF)",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1190"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "LB_HTTP_LISTENER",
+          "ALB_INTERNET_FACING"
+        ],
+        "conditions": [
+          "node.type==alb && exposure.internet_facing"
+        ]
+      },
+      "enables": [
+        "ca_imds_theft",
+        "pe_instance_role_broad"
+      ],
+      "remediation": "Front with WAF; enforce HTTPS; patch app; block IMDS from app via IMDSv2 hop-limit."
+    },
+    {
+      "id": "ia_all_traffic_sg",
+      "name": "All-protocol/all-port ingress",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1190"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "EC2_PUBLIC_ALL_TRAFFIC"
+        ],
+        "conditions": [
+          "exposure.ports contains -1 && exposure.cidrs contains 0.0.0.0/0"
+        ]
+      },
+      "enables": [
+        "ca_imds_theft"
+      ],
+      "remediation": "Replace any-any SG rule with least-port allow-list."
+    },
+    {
+      "id": "ia_public_lambda_url",
+      "name": "Public Lambda function URL (auth NONE)",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1190"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [
+          "LAMBDA_PUBLIC_URL"
+        ],
+        "conditions": [
+          "node.type==lambda_function && attributes.url_auth==NONE"
+        ]
+      },
+      "enables": [
+        "pe_passrole_lambda"
+      ],
+      "remediation": "Set function URL AuthType=AWS_IAM or remove; front with API GW + authorizer."
+    },
+    {
+      "id": "ia_public_api_gw",
+      "name": "Open/unauthenticated API Gateway",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1190"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [
+          "APIGW_NO_AUTH"
+        ],
+        "conditions": [
+          "node.type==api_gateway && attributes.authorization==NONE"
+        ]
+      },
+      "enables": [],
+      "remediation": "Attach authorizer/IAM auth; usage plans; WAF."
+    },
+    {
+      "id": "ia_public_ecr",
+      "name": "Public ECR repository",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1190",
+        "T1525"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [
+          "ECR_PUBLIC_REPO"
+        ],
+        "conditions": [
+          "node.type==ecr_repo && exposure.internet_facing"
+        ]
+      },
+      "enables": [
+        "co_artifact_poison"
+      ],
+      "remediation": "Make repo private; scan on push; restrict repo policy to org."
+    },
+    {
+      "id": "ia_public_snapshot",
+      "name": "Public/shared EBS/AMI/RDS snapshot",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1580",
+        "T1078"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "EBS_SNAPSHOT_PUBLIC",
+          "AMI_PUBLIC",
+          "RDS_SNAPSHOT_PUBLIC"
+        ],
+        "conditions": [
+          "node.type in [ebs_snapshot,ami,rds_snapshot] && attributes.shared_public"
+        ]
+      },
+      "enables": [
+        "ca_secrets_in_public_bucket",
+        "co_db_dump"
+      ],
+      "remediation": "Remove public/cross-account share; encrypt snapshots; audit restorableByUserIds."
+    },
+    {
+      "id": "ia_plaintext_mitm",
+      "name": "Plaintext channel enabling interception",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1557"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [
+          "CLOUDFRONT_ALLOW_HTTP",
+          "CLOUDFRONT_WEAK_TLS",
+          "LB_HTTP_LISTENER",
+          "EC2_PUBLIC_PLAINTEXT_PORT",
+          "MQTT_OPEN"
+        ],
+        "conditions": []
+      },
+      "enables": [
+        "ca_intercept_plaintext"
+      ],
+      "remediation": "Enforce TLS1.2+; redirect HTTP->HTTPS; disable plaintext listeners."
+    },
+    {
+      "id": "ca_static_key_theft",
+      "name": "Long-lived static access key reuse",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1552.001"
+      ],
+      "category": "B. Credential Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "IAM_ACTIVE_ACCESS_KEY",
+          "IAM_STALE_ACCESS_KEY"
+        ],
+        "conditions": [
+          "access_key.attributes.age_days > 180 || attributes.multiple_active"
+        ]
+      },
+      "enables": [
+        "pe_iam_fullaccess",
+        "lm_ci_robot_pivot",
+        "co_s3_bulk_get"
+      ],
+      "remediation": "Rotate <90d; prefer roles/OIDC; disable unused keys; alert on off-pattern use."
+    },
+    {
+      "id": "ca_secrets_in_public_bucket",
+      "name": "Secrets harvested from public bucket (TF-state/CI/backup)",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1552.001",
+        "T1530"
+      ],
+      "category": "B. Credential Access",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [
+          "S3_PUBLIC_BUCKET_ACCESS"
+        ],
+        "conditions": [
+          "node.attributes.name matches (tf|terraform|state|backup|cicd|pipeline|secret|git)"
+        ]
+      },
+      "enables": [
+        "ca_static_key_theft",
+        "ia_public_db",
+        "lm_ci_robot_pivot"
+      ],
+      "remediation": "Never store secrets in S3 plaintext/state; use Secrets Manager; lock the bucket."
+    },
+    {
+      "id": "ca_imds_theft",
+      "name": "Instance-role credential theft via IMDS/SSRF",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1552.005"
+      ],
+      "category": "B. Credential Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "EC2_IMDSV2_NOT_ENFORCED",
+          "INSTANCE_ROLE_EXFILTRATION_DETECTED"
+        ],
+        "conditions": [
+          "ec2_instance.attributes.http_tokens==optional"
+        ]
+      },
+      "enables": [
+        "pe_instance_role_broad",
+        "lm_ssm_lateral"
+      ],
+      "remediation": "Enforce IMDSv2 (HttpTokens=required, hop-limit=1); scope instance roles least-priv."
+    },
+    {
+      "id": "ca_no_mfa_phish",
+      "name": "Phish/guess no-MFA console user",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1078.004",
+        "T1621"
+      ],
+      "category": "B. Credential Access",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [
+          "IAM_USER_NO_MFA"
+        ],
+        "conditions": [
+          "iam_user.attributes.console_login && !attributes.mfa"
+        ]
+      },
+      "enables": [
+        "pe_no_mfa_admin_console"
+      ],
+      "remediation": "Enforce MFA for all console users via SCP; disable unused login profiles."
+    },
+    {
+      "id": "ca_k8s_secrets",
+      "name": "List/read Kubernetes secrets",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1552.007"
+      ],
+      "category": "B. Credential Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "K8S_SECRETS_ACCESSIBLE"
+        ],
+        "conditions": [
+          "principal has system:masters || eks:* "
+        ]
+      },
+      "enables": [
+        "lm_ci_robot_pivot",
+        "pe_iam_fullaccess"
+      ],
+      "remediation": "Least-priv RBAC; no system:masters for CI; sealed-secrets/External Secrets."
+    },
+    {
+      "id": "ca_secretsmanager_ssm_read",
+      "name": "Read Secrets Manager / SSM SecureString",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1552"
+      ],
+      "category": "B. Credential Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "SECRETS_BROAD_READ"
+        ],
+        "conditions": [
+          "principal can secretsmanager:GetSecretValue on *"
+        ]
+      },
+      "enables": [
+        "lm_ci_robot_pivot",
+        "ia_public_db"
+      ],
+      "remediation": "Resource-scope secret reads; rotate; CloudTrail data events on secrets."
+    },
+    {
+      "id": "ca_db_creds_from_db",
+      "name": "Harvest app/service creds from reachable DB",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1552"
+      ],
+      "category": "B. Credential Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "edge.can_reach to rds_instance"
+        ]
+      },
+      "enables": [
+        "lm_ci_robot_pivot"
+      ],
+      "remediation": "No plaintext creds in app tables; use IAM DB auth/Secrets Manager."
+    },
+    {
+      "id": "ca_intercept_plaintext",
+      "name": "Credential interception over plaintext",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1557"
+      ],
+      "category": "B. Credential Access",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [
+          "CLOUDFRONT_ALLOW_HTTP",
+          "LB_HTTP_LISTENER",
+          "MQTT_OPEN"
+        ],
+        "conditions": []
+      },
+      "enables": [],
+      "remediation": "Enforce TLS end to end."
+    },
+    {
+      "id": "pe_iam_fullaccess",
+      "name": "IAMFullAccess self-escalation",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1098"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [
+          "IAM_FULL_ACCESS"
+        ],
+        "conditions": [
+          "principal has iam:* "
+        ]
+      },
+      "enables": [
+        "pe_create_policy_version",
+        "pe_attach_user_policy",
+        "pe_create_access_key_on_other",
+        "pe_update_assume_role_policy"
+      ],
+      "remediation": "Remove IAMFullAccess from non-admins/robots; use permission boundaries + approval."
+    },
+    {
+      "id": "pe_create_policy_version",
+      "name": "CreatePolicyVersion/SetDefault \u2192 grant self *:*",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1098"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "principal can iam:CreatePolicyVersion+iam:SetDefaultPolicyVersion"
+        ]
+      },
+      "enables": [
+        "pe_admin"
+      ],
+      "remediation": "Deny policy-version edits outside break-glass; boundaries."
+    },
+    {
+      "id": "pe_attach_user_policy",
+      "name": "AttachUserPolicy/PutUserPolicy self-attach admin",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1098"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "principal can iam:AttachUserPolicy||iam:PutUserPolicy||iam:AttachRolePolicy||iam:PutRolePolicy"
+        ]
+      },
+      "enables": [
+        "pe_admin"
+      ],
+      "remediation": "Restrict policy-attachment to admins; boundaries deny escalation."
+    },
+    {
+      "id": "pe_passrole_lambda",
+      "name": "PassRole \u2192 Lambda as higher-priv role",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1548",
+        "T1078"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "IAM_PASSROLE_LAMBDA"
+        ],
+        "conditions": [
+          "principal can iam:PassRole && lambda:CreateFunction+lambda:InvokeFunction"
+        ]
+      },
+      "enables": [
+        "pe_admin"
+      ],
+      "remediation": "Constrain iam:PassRole with role-path/tag conditions; separate deploy roles."
+    },
+    {
+      "id": "pe_passrole_glue_sagemaker",
+      "name": "PassRole \u2192 Glue/SageMaker execution role",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1548"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "IAM_PASSROLE_GLUE",
+          "IAM_PASSROLE_SAGEMAKER"
+        ],
+        "conditions": [
+          "principal can iam:PassRole && (glue:*||sagemaker:CreateNotebookInstance)"
+        ]
+      },
+      "enables": [
+        "pe_admin",
+        "co_glue_datalake"
+      ],
+      "remediation": "Scope PassRole; least-priv execution roles."
+    },
+    {
+      "id": "pe_passrole_cloudformation",
+      "name": "PassRole \u2192 CloudFormation stack as admin role",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1548"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "IAM_PASSROLE_CFN"
+        ],
+        "conditions": [
+          "principal can iam:PassRole && cloudformation:CreateStack"
+        ]
+      },
+      "enables": [
+        "pe_admin"
+      ],
+      "remediation": "Scope PassRole; use CFN service role allow-list."
+    },
+    {
+      "id": "pe_ec2_run_as_role",
+      "name": "EC2FullAccess \u2192 launch with admin instance profile",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1078"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "IAM_EC2_FULL"
+        ],
+        "conditions": [
+          "principal can ec2:RunInstances && iam:PassRole"
+        ]
+      },
+      "enables": [
+        "pe_admin",
+        "pe_instance_role_broad"
+      ],
+      "remediation": "Restrict RunInstances+PassRole; approved instance-profile allow-list."
+    },
+    {
+      "id": "pe_ssm_sendcommand",
+      "name": "SSMFullAccess \u2192 SendCommand on managed hosts",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1651"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "IAM_SSM_FULL"
+        ],
+        "conditions": [
+          "principal can ssm:SendCommand||ssm:StartSession on *"
+        ]
+      },
+      "enables": [
+        "lm_ssm_lateral",
+        "pe_admin"
+      ],
+      "remediation": "Scope SSM by tag/resource; session logging; approval for RunCommand."
+    },
+    {
+      "id": "pe_update_assume_role_policy",
+      "name": "UpdateAssumeRolePolicy \u2192 make admin role assumable",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1098"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "principal can iam:UpdateAssumeRolePolicy"
+        ]
+      },
+      "enables": [
+        "pe_admin",
+        "ps_backdoor_role_trust"
+      ],
+      "remediation": "Deny trust-policy edits outside break-glass."
+    },
+    {
+      "id": "pe_create_access_key_on_other",
+      "name": "CreateAccessKey on another (admin) user",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1098.001"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "principal can iam:CreateAccessKey on other user"
+        ]
+      },
+      "enables": [
+        "pe_admin",
+        "ps_add_access_key"
+      ],
+      "remediation": "Scope iam:CreateAccessKey to self; boundaries."
+    },
+    {
+      "id": "pe_create_login_profile",
+      "name": "CreateLoginProfile/UpdateLoginProfile on user",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1098"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "principal can iam:CreateLoginProfile||iam:UpdateLoginProfile"
+        ]
+      },
+      "enables": [
+        "pe_admin",
+        "ps_add_login_profile"
+      ],
+      "remediation": "Restrict login-profile management to admins."
+    },
+    {
+      "id": "pe_no_mfa_admin_console",
+      "name": "No-MFA admin console = instant account admin",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1078.004"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [
+          "IAM_ADMIN_MANAGED_POLICY",
+          "IAM_USER_NO_MFA"
+        ],
+        "conditions": [
+          "iam_user.attributes.admin_like && console_login && !mfa"
+        ]
+      },
+      "enables": [
+        "pe_admin",
+        "lm_org_account_access_role"
+      ],
+      "remediation": "Enforce MFA; move humans to federated SSO with MFA."
+    },
+    {
+      "id": "pe_wildcard_policy",
+      "name": "Wildcard Action:* Resource:* policy",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1098"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "IAM_WILDCARD_INLINE_POLICY",
+          "IAM_WILDCARD_MANAGED_POLICY"
+        ],
+        "conditions": [
+          "principal has service:* on *"
+        ]
+      },
+      "enables": [
+        "pe_admin"
+      ],
+      "remediation": "Replace wildcards with least-priv; IAM Access Analyzer policy generation."
+    },
+    {
+      "id": "pe_instance_role_broad",
+      "name": "Over-broad instance profile assumed",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1552.005"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "INSTANCE_ROLE_EXFILTRATION_DETECTED"
+        ],
+        "conditions": [
+          "instance_profile role has admin/wildcard/passrole"
+        ]
+      },
+      "enables": [
+        "pe_admin",
+        "lm_org_account_access_role"
+      ],
+      "remediation": "Least-priv instance roles; IMDSv2; detect off-box use."
+    },
+    {
+      "id": "pe_k8s_privileged",
+      "name": "Privileged container / RBAC escalation",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1611"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "K8S_PRIVILEGED_WORKLOAD"
+        ],
+        "conditions": [
+          "principal has system:masters"
+        ]
+      },
+      "enables": [
+        "lm_ci_robot_pivot"
+      ],
+      "remediation": "Pod Security Admission restricted; drop system:masters for automation."
+    },
+    {
+      "id": "pe_root_mfa_manipulation",
+      "name": "Root MFA manipulation / root usage",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1098",
+        "T1531"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [
+          "ROOT_ACTIVITY",
+          "ROOT_MFA_DISABLED"
+        ],
+        "conditions": [
+          "actor==root && event in [DeactivateMFADevice,CreateAccessKey]"
+        ]
+      },
+      "enables": [
+        "ps_deactivate_mfa"
+      ],
+      "remediation": "Lock root (hardware MFA, no keys); alert on any root use; SCP restrict."
+    },
+    {
+      "id": "pe_no_permission_boundary",
+      "name": "No permission boundary / SCP guardrail (enabler)",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1098"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "NO_PERMISSION_BOUNDARY",
+          "NO_SCP"
+        ],
+        "conditions": []
+      },
+      "enables": [
+        "pe_iam_fullaccess",
+        "pe_wildcard_policy"
+      ],
+      "remediation": "Apply permission boundaries to all provisioning identities; org SCP deny-list."
+    },
+    {
+      "id": "pe_admin",
+      "name": "Account-level administrator obtained",
+      "tactic": "privilege-escalation",
+      "mitre": [
+        "T1078"
+      ],
+      "category": "C. Privilege Escalation",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "terminal privesc state"
+        ]
+      },
+      "enables": [
+        "lm_org_account_access_role",
+        "ps_add_access_key",
+        "de_stop_delete_trail",
+        "im_destructive_delete"
+      ],
+      "remediation": "n/a (goal state) \u2014 restrict all upstream primitives."
+    },
+    {
+      "id": "lm_org_account_access_role",
+      "name": "OrganizationAccountAccessRole / ControlTower pivot",
+      "tactic": "lateral-movement",
+      "mitre": [
+        "T1078",
+        "T1550"
+      ],
+      "category": "D. Lateral Movement",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [
+          "ORG_ACCOUNT_ACCESS_ROLE",
+          "AWS_CONTROL_TOWER_EXECUTION"
+        ],
+        "conditions": [
+          "role trusts management account"
+        ]
+      },
+      "enables": [
+        "pe_admin"
+      ],
+      "remediation": "Restrict/monitor OrganizationAccountAccessRole; require MFA+alerting on assume."
+    },
+    {
+      "id": "lm_delegated_admin",
+      "name": "Delegated-admin account pivot",
+      "tactic": "lateral-movement",
+      "mitre": [
+        "T1078"
+      ],
+      "category": "D. Lateral Movement",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "role trusts delegated-admin account"
+        ]
+      },
+      "enables": [
+        "pe_admin"
+      ],
+      "remediation": "Tighten delegated-admin trust; monitor."
+    },
+    {
+      "id": "lm_confused_deputy_no_externalid",
+      "name": "Confused-deputy cross-account trust (no ExternalId)",
+      "tactic": "lateral-movement",
+      "mitre": [
+        "T1199",
+        "T1078"
+      ],
+      "category": "D. Lateral Movement",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "IAM_RISKY_TRUST_POLICY"
+        ],
+        "conditions": [
+          "role trusts external_account && !condition.external_id"
+        ]
+      },
+      "enables": [
+        "co_s3_bulk_get",
+        "co_db_dump",
+        "pe_admin"
+      ],
+      "remediation": "Require ExternalId/aws:SourceArn condition; validate vendor account list."
+    },
+    {
+      "id": "lm_sso_role_fanout",
+      "name": "IAM Identity Center / SSO role fan-out",
+      "tactic": "lateral-movement",
+      "mitre": [
+        "T1078.004"
+      ],
+      "category": "D. Lateral Movement",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "SSO_ADMIN_ROLE"
+        ],
+        "conditions": [
+          "AWSReservedSSO_* admin role reachable"
+        ]
+      },
+      "enables": [
+        "pe_admin"
+      ],
+      "remediation": "Least-priv permission sets; MFA; session duration limits."
+    },
+    {
+      "id": "lm_ssm_lateral",
+      "name": "SSM SendCommand/Session lateral to fleet",
+      "tactic": "lateral-movement",
+      "mitre": [
+        "T1021"
+      ],
+      "category": "D. Lateral Movement",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "IAM_SSM_FULL"
+        ],
+        "conditions": [
+          "principal can ssm:SendCommand||StartSession on managed nodes"
+        ]
+      },
+      "enables": [
+        "ca_imds_theft"
+      ],
+      "remediation": "Scope SSM; session logging; approval."
+    },
+    {
+      "id": "lm_ci_robot_pivot",
+      "name": "CI/CD robot identity \u2192 downstream accounts",
+      "tactic": "lateral-movement",
+      "mitre": [
+        "T1078"
+      ],
+      "category": "D. Lateral Movement",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [
+          "CI_ROBOT_ADMIN"
+        ],
+        "conditions": [
+          "principal.name matches (jenkins|teamcity|cloudagent|pipeline|bitbucket) && admin_like"
+        ]
+      },
+      "enables": [
+        "co_artifact_poison",
+        "pe_admin"
+      ],
+      "remediation": "Least-priv CI roles; OIDC short-lived; no IAMFullAccess for robots."
+    },
+    {
+      "id": "lm_cross_region_replication_follow",
+      "name": "Follow cross-region S3 replication copy",
+      "tactic": "lateral-movement",
+      "mitre": [
+        "T1530"
+      ],
+      "category": "D. Lateral Movement",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "edge.replicates_to exists"
+        ]
+      },
+      "enables": [
+        "co_s3_bulk_get"
+      ],
+      "remediation": "Protect replica buckets equally; restrict replica-account access."
+    },
+    {
+      "id": "lm_shared_log_bucket_write",
+      "name": "Shared cross-account log bucket write",
+      "tactic": "lateral-movement",
+      "mitre": [
+        "T1078"
+      ],
+      "category": "D. Lateral Movement",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "log_bucket receives writes from multiple accounts"
+        ]
+      },
+      "enables": [
+        "de_tamper_log_bucket"
+      ],
+      "remediation": "Per-account log buckets or object-lock + deny delete."
+    },
+    {
+      "id": "ps_add_access_key",
+      "name": "Mint additional access key for persistence",
+      "tactic": "persistence",
+      "mitre": [
+        "T1098.001"
+      ],
+      "category": "E. Persistence",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "principal can iam:CreateAccessKey"
+        ]
+      },
+      "enables": [],
+      "remediation": "Alert on CreateAccessKey; key-count limit; boundaries."
+    },
+    {
+      "id": "ps_add_login_profile",
+      "name": "Create console login profile for persistence",
+      "tactic": "persistence",
+      "mitre": [
+        "T1098"
+      ],
+      "category": "E. Persistence",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "principal can iam:CreateLoginProfile"
+        ]
+      },
+      "enables": [],
+      "remediation": "Alert on login-profile creation; MFA enforced."
+    },
+    {
+      "id": "ps_backdoor_role_trust",
+      "name": "Backdoor role trust policy",
+      "tactic": "persistence",
+      "mitre": [
+        "T1098"
+      ],
+      "category": "E. Persistence",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "principal can iam:UpdateAssumeRolePolicy"
+        ]
+      },
+      "enables": [],
+      "remediation": "Alert on trust-policy change; Access Analyzer external-access findings."
+    },
+    {
+      "id": "ps_eks_daemonset",
+      "name": "Persistent EKS workload/daemonset",
+      "tactic": "persistence",
+      "mitre": [
+        "T1543"
+      ],
+      "category": "E. Persistence",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "K8S_WORKLOAD_DEPLOYED"
+        ],
+        "conditions": [
+          "principal has cluster-admin"
+        ]
+      },
+      "enables": [],
+      "remediation": "Admission control; audit workloads; GuardDuty EKS protection."
+    },
+    {
+      "id": "ps_lambda_backdoor",
+      "name": "Lambda/EventBridge backdoor with passed role",
+      "tactic": "persistence",
+      "mitre": [
+        "T1546"
+      ],
+      "category": "E. Persistence",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [
+          "IAM_PASSROLE_LAMBDA"
+        ],
+        "conditions": [
+          "principal can lambda:CreateFunction+events:PutRule"
+        ]
+      },
+      "enables": [],
+      "remediation": "Review new functions/rules; scope PassRole."
+    },
+    {
+      "id": "ps_long_lived_key",
+      "name": "Long-lived key as durable persistence",
+      "tactic": "persistence",
+      "mitre": [
+        "T1098"
+      ],
+      "category": "E. Persistence",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "IAM_ACTIVE_ACCESS_KEY"
+        ],
+        "conditions": [
+          "access_key.attributes.age_days > 365"
+        ]
+      },
+      "enables": [],
+      "remediation": "Mandatory rotation; max key age SCP."
+    },
+    {
+      "id": "ps_deactivate_mfa",
+      "name": "Deactivate MFA / weaken auth for re-entry",
+      "tactic": "persistence",
+      "mitre": [
+        "T1531",
+        "T1098"
+      ],
+      "category": "E. Persistence",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [
+          "ROOT_MFA_DISABLED"
+        ],
+        "conditions": [
+          "event==DeactivateMFADevice"
+        ]
+      },
+      "enables": [],
+      "remediation": "Alert+auto-revert on MFA deactivation; SCP protect."
+    },
+    {
+      "id": "de_cloudtrail_disabled",
+      "name": "Operate in CloudTrail-off account",
+      "tactic": "defense-evasion",
+      "mitre": [
+        "T1562.008"
+      ],
+      "category": "F. Defense Evasion",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "CLOUDTRAIL_NOT_ENABLED"
+        ],
+        "conditions": [
+          "account.cloudtrail==false"
+        ]
+      },
+      "enables": [
+        "co_s3_bulk_get",
+        "im_destructive_delete"
+      ],
+      "remediation": "Org trail covering all accounts/regions; deny StopLogging via SCP."
+    },
+    {
+      "id": "de_stop_delete_trail",
+      "name": "StopLogging / DeleteTrail",
+      "tactic": "defense-evasion",
+      "mitre": [
+        "T1562.008"
+      ],
+      "category": "F. Defense Evasion",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "CLOUDTRAIL_TAMPER"
+        ],
+        "conditions": [
+          "event in [StopLogging,DeleteTrail]"
+        ]
+      },
+      "enables": [],
+      "remediation": "SCP deny cloudtrail:StopLogging/DeleteTrail except break-glass; alert."
+    },
+    {
+      "id": "de_no_detection_coverage",
+      "name": "Operate where Config/Analyzer/Macie/Detective absent",
+      "tactic": "defense-evasion",
+      "mitre": [
+        "T1562"
+      ],
+      "category": "F. Defense Evasion",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "CONFIG_DISABLED",
+          "ACCESS_ANALYZER_DISABLED",
+          "MACIE_DISABLED",
+          "DETECTIVE_DISABLED"
+        ],
+        "conditions": []
+      },
+      "enables": [],
+      "remediation": "Enable org-wide via delegated admin + conformance packs."
+    },
+    {
+      "id": "de_tamper_log_bucket",
+      "name": "Tamper shared/central log bucket",
+      "tactic": "defense-evasion",
+      "mitre": [
+        "T1070"
+      ],
+      "category": "F. Defense Evasion",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "principal can s3:DeleteObject on log_bucket"
+        ]
+      },
+      "enables": [],
+      "remediation": "S3 Object Lock (WORM); deny delete; separate log account."
+    },
+    {
+      "id": "de_unreadable_access_logs",
+      "name": "Exploit access logs unreadable to defenders",
+      "tactic": "defense-evasion",
+      "mitre": [
+        "T1070"
+      ],
+      "category": "F. Defense Evasion",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "defender denied read on access-log bucket"
+        ]
+      },
+      "enables": [],
+      "remediation": "Grant IR read to log buckets; centralize logs."
+    },
+    {
+      "id": "de_dns_tunneling",
+      "name": "DNS tunneling / unusual resolver egress",
+      "tactic": "defense-evasion",
+      "mitre": [
+        "T1071.004"
+      ],
+      "category": "F. Defense Evasion",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [
+          "EGRESS_UNRESTRICTED"
+        ],
+        "conditions": []
+      },
+      "enables": [],
+      "remediation": "Egress filtering; Route53 Resolver DNS Firewall; VPC flow logs."
+    },
+    {
+      "id": "de_audit_role_blend",
+      "name": "Blend into audit-role enumeration noise",
+      "tactic": "defense-evasion",
+      "mitre": [
+        "T1078"
+      ],
+      "category": "F. Defense Evasion",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "read-only audit role used for recon"
+        ]
+      },
+      "enables": [
+        "rc_audit_identity_recon"
+      ],
+      "remediation": "Baseline audit-role behavior; alert on new source/scope."
+    },
+    {
+      "id": "co_s3_list_recon",
+      "name": "Bulk S3 ListObjects reconnaissance",
+      "tactic": "collection",
+      "mitre": [
+        "T1580",
+        "T1619"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "edge.can_reach to s3_bucket/crown_jewel"
+        ]
+      },
+      "enables": [
+        "co_s3_bulk_get"
+      ],
+      "remediation": "S3 data events; anomaly detection; least-priv."
+    },
+    {
+      "id": "co_s3_bulk_get",
+      "name": "Bulk S3 GetObject exfiltration",
+      "tactic": "exfiltration",
+      "mitre": [
+        "T1530",
+        "T1567"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "edge.can_reach to crown_jewel(type=s3_bucket)"
+        ]
+      },
+      "enables": [],
+      "remediation": "S3 data events + GuardDuty S3 protection; egress controls; VPC endpoints."
+    },
+    {
+      "id": "co_exfil_tor",
+      "name": "Exfiltration via Tor/anonymizer",
+      "tactic": "exfiltration",
+      "mitre": [
+        "T1090.003"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "source==tor"
+        ]
+      },
+      "enables": [],
+      "remediation": "Block Tor egress/ingress; GuardDuty Tor findings."
+    },
+    {
+      "id": "co_db_dump",
+      "name": "Dump production/customer database",
+      "tactic": "collection",
+      "mitre": [
+        "T1005",
+        "T1567"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "edge.can_reach to rds_instance/crown_jewel"
+        ]
+      },
+      "enables": [],
+      "remediation": "Private DBs; IAM auth; DB activity monitoring."
+    },
+    {
+      "id": "co_bedrock_kb_read",
+      "name": "Steal Bedrock knowledge-base source data",
+      "tactic": "collection",
+      "mitre": [
+        "T1530"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "BEDROCK_KB_NO_GUARDRAIL",
+          "BEDROCK_BROAD_IAM"
+        ],
+        "conditions": [
+          "edge.can_reach to bedrock_kb"
+        ]
+      },
+      "enables": [],
+      "remediation": "Scope Bedrock IAM; guardrails; model invocation logging."
+    },
+    {
+      "id": "co_glue_datalake",
+      "name": "Exfiltrate Glue/data-lake",
+      "tactic": "collection",
+      "mitre": [
+        "T1530"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "principal has glue:* and reach to data-lake S3"
+        ]
+      },
+      "enables": [],
+      "remediation": "Lake Formation least-priv; column/row security."
+    },
+    {
+      "id": "co_sagemaker_model_theft",
+      "name": "Harvest SageMaker models/notebooks",
+      "tactic": "collection",
+      "mitre": [
+        "T1530"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "edge.can_reach to sagemaker"
+        ]
+      },
+      "enables": [],
+      "remediation": "VPC-only notebooks; scoped model-registry access."
+    },
+    {
+      "id": "co_artifact_poison",
+      "name": "Poison artifacts/images (supply chain)",
+      "tactic": "impact",
+      "mitre": [
+        "T1195"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "ECR_PUBLIC_REPO",
+          "CI_ROBOT_ADMIN"
+        ],
+        "conditions": [
+          "write access to artifact/image store"
+        ]
+      },
+      "enables": [],
+      "remediation": "Signed images; immutable tags; provenance/attestation."
+    },
+    {
+      "id": "co_backup_pull",
+      "name": "Stage-and-download from backup/archive buckets",
+      "tactic": "exfiltration",
+      "mitre": [
+        "T1530"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "S3_PUBLIC_BUCKET_ACCESS"
+        ],
+        "conditions": [
+          "node.name matches (backup|archive|snapshot)"
+        ]
+      },
+      "enables": [],
+      "remediation": "Lock and encrypt backups; separate backup account; MFA-delete."
+    },
+    {
+      "id": "ai_bedrock_key_abuse",
+      "name": "Broad Bedrock IAM / static-key abuse",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1552"
+      ],
+      "category": "H. AI / Impact",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "BEDROCK_BROAD_IAM"
+        ],
+        "conditions": [
+          "principal has bedrock:* or AmazonBedrockFullAccess"
+        ]
+      },
+      "enables": [
+        "co_bedrock_kb_read",
+        "ai_invoke_no_guardrail"
+      ],
+      "remediation": "Least-priv Bedrock IAM; no static keys for AI; invocation logging."
+    },
+    {
+      "id": "ai_invoke_no_guardrail",
+      "name": "Invoke agents/KBs without guardrails",
+      "tactic": "collection",
+      "mitre": [
+        "T1530"
+      ],
+      "category": "H. AI / Impact",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "BEDROCK_KB_NO_GUARDRAIL",
+          "BEDROCK_AGENT_NO_GUARDRAIL"
+        ],
+        "conditions": []
+      },
+      "enables": [],
+      "remediation": "Attach guardrails to all agents/KBs; content filters; logging."
+    },
+    {
+      "id": "ai_prompt_injection_rag",
+      "name": "Prompt-injection / RAG data extraction",
+      "tactic": "collection",
+      "mitre": [
+        "T1530"
+      ],
+      "category": "H. AI / Impact",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [
+          "BEDROCK_KB_NO_GUARDRAIL"
+        ],
+        "conditions": [
+          "financial/PII RAG corpus reachable"
+        ]
+      },
+      "enables": [],
+      "remediation": "Guardrails; input/output filtering; data minimization in KBs (OWASP LLM01/LLM06)."
+    },
+    {
+      "id": "im_destructive_delete",
+      "name": "Ransom/impact via destructive actions",
+      "tactic": "impact",
+      "mitre": [
+        "T1485",
+        "T1486",
+        "T1531"
+      ],
+      "category": "H. AI / Impact",
+      "default_severity": "critical",
+      "signature": {
+        "controls": [
+          "EBS_UNENCRYPTED",
+          "RDS_UNENCRYPTED"
+        ],
+        "conditions": [
+          "principal has broad delete/kms:ScheduleKeyDeletion"
+        ]
+      },
+      "enables": [],
+      "remediation": "Backups + object lock; deny bulk delete; delete-protection; KMS deletion window alerts."
+    },
+    {
+      "id": "rc_audit_identity_recon",
+      "name": "Estate-wide recon via compromised audit identity",
+      "tactic": "reconnaissance",
+      "mitre": [
+        "T1526"
+      ],
+      "category": "H. AI / Impact",
+      "default_severity": "high",
+      "signature": {
+        "controls": [],
+        "conditions": [
+          "read-only audit role deployed org-wide && externalid unconfirmed"
+        ]
+      },
+      "enables": [
+        "lm_confused_deputy_no_externalid"
+      ],
+      "remediation": "Require ExternalId on audit-role trust; short-lived OIDC; alert on audit-role source change."
+    },
+    {
+      "id": "plaintext_alb_ssrf_to_imds",
+      "name": "Plaintext ALB (no WAF) SSRF to IMDS role credentials",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1552.005",
+        "T1190"
+      ],
+      "category": "B. Credential Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "LB_HTTP_LISTENER",
+          "ALB_NO_WAF",
+          "EC2_IMDSV2_NOT_ENFORCED"
+        ],
+        "conditions": [
+          "internet-facing ALB without WAF fronting an app on an IMDSv1 host"
+        ]
+      },
+      "enables": [
+        "pe_instance_role_broad",
+        "co_s3_bulk_get"
+      ],
+      "remediation": "Front ALBs with WAF and enforce HTTPS; enforce IMDSv2 (HttpTokens=required, hop-limit=1)."
+    },
+    {
+      "id": "snapshot_share_via_unencryption",
+      "name": "Unencrypted snapshot cross-account share exfiltration",
+      "tactic": "exfiltration",
+      "mitre": [
+        "T1537"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "EBS_UNENCRYPTED",
+          "RDS_UNENCRYPTED",
+          "RDS_CLUSTER_UNENCRYPTED",
+          "FSX_UNENCRYPTED"
+        ],
+        "conditions": [
+          "principal can Create + ModifySnapshotAttribute/ModifyDBSnapshotAttribute and the volume/db is unencrypted"
+        ]
+      },
+      "enables": [],
+      "remediation": "Default-encrypt EBS/RDS/FSx (encrypted snapshots require an explicit KMS grant to share); restrict snapshot Modify*Attribute."
+    },
+    {
+      "id": "cloudfront_oai_overbroad_bypass",
+      "name": "Legacy CloudFront OAI with s3:* bypasses a tightened bucket policy",
+      "tactic": "collection",
+      "mitre": [
+        "T1530"
+      ],
+      "category": "G. Collection & Exfiltration",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "S3_OAI_WILDCARD",
+          "CLOUDFRONT_WEAK_TLS",
+          "CLOUDFRONT_ALLOW_HTTP"
+        ],
+        "conditions": [
+          "a CloudFront OAI principal holds s3:* on the bucket objects independent of the bucket policy"
+        ]
+      },
+      "enables": [
+        "co_s3_bulk_get"
+      ],
+      "remediation": "Scope the OAI to s3:GetObject on a specific prefix; migrate to OAC with a least-privilege policy."
+    },
+    {
+      "id": "nat_bastion_pivot",
+      "name": "All-traffic NAT/bastion routing pivot into private subnets",
+      "tactic": "lateral-movement",
+      "mitre": [
+        "T1021",
+        "T1090"
+      ],
+      "category": "D. Lateral Movement",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "EC2_PUBLIC_ALL_TRAFFIC",
+          "EC2_PUBLIC_ADMIN_PORT"
+        ],
+        "conditions": [
+          "the compromised internet-facing host is a NAT/bastion that routes to private subnets"
+        ]
+      },
+      "enables": [
+        "ia_public_db",
+        "co_db_dump"
+      ],
+      "remediation": "Replace any-any SG rules with least-port; separate NAT from bastion; use an egress-only NAT gateway."
+    },
+    {
+      "id": "ses_identity_phishing_infra",
+      "name": "Dormant SES sending identity used for domain-authentic phishing",
+      "tactic": "credential-access",
+      "mitre": [
+        "T1585.002",
+        "T1566"
+      ],
+      "category": "B. Credential Access",
+      "default_severity": "medium",
+      "signature": {
+        "controls": [
+          "SES_UNUSED_IDENTITY",
+          "IAM_ACTIVE_ACCESS_KEY"
+        ],
+        "conditions": [
+          "a never-used ses-smtp identity exists for a verified sending domain"
+        ]
+      },
+      "enables": [
+        "ca_no_mfa_phish",
+        "pe_no_mfa_admin_console"
+      ],
+      "remediation": "Disable unused SES keys/identities; enforce DMARC; require MFA on all console users."
+    },
+    {
+      "id": "public_writable_website_supply_chain",
+      "name": "Public-writable S3 website enables a client-side JS supply chain",
+      "tactic": "initial-access",
+      "mitre": [
+        "T1195.002",
+        "T1189"
+      ],
+      "category": "A. Initial Access",
+      "default_severity": "high",
+      "signature": {
+        "controls": [
+          "S3_PUBLIC_ACL",
+          "S3_PUBLIC_BUCKET_ACCESS"
+        ],
+        "conditions": [
+          "a CDN-fronted static-website bucket has a public-write ACL"
+        ]
+      },
+      "enables": [
+        "ca_no_mfa_phish"
+      ],
+      "remediation": "Remove public-write ACLs; use OAC + Subresource Integrity; separate the build identity from the bucket."
+    }
+  ]
+}

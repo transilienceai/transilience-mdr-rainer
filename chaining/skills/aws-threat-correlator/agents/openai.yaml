@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS Threat Correlator"
+  short_description: "Overlay live GuardDuty threats onto the attack-chain model"
+  default_prompt: "Use $aws-threat-correlator to correlate GuardDuty findings and investigation evidence onto this attack-chains model, mark live chains/techniques, and roll up threat-actor indicators."

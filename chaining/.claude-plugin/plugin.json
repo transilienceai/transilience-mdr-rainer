@@ -1,0 +1,22 @@
+{
+  "name": "cloud-chaining",
+  "version": "0.1.0",
+  "description": "Proactive attack-path chaining across an AWS estate: collect the exposure/identity/crown-jewel graph, merge it, enumerate scored kill chains from an internet foothold or a single stolen credential to crown jewels, correlate live GuardDuty threats, and package red-team reports. Extensible misconfiguration->primitive->MITRE knowledge base.",
+  "author": {
+    "name": "Transilience AI",
+    "url": "https://github.com/transilienceai"
+  },
+  "repository": "https://github.com/transilienceai/cloud-detection",
+  "license": "MIT",
+  "keywords": [
+    "attack-path",
+    "attack-graph",
+    "red-team",
+    "exposure",
+    "privilege-escalation",
+    "lateral-movement",
+    "crown-jewels",
+    "mitre-attack",
+    "aws"
+  ]
+}

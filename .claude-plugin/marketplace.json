@@ -1,18 +1,71 @@
 {
-  "name": "Transilience MDR Rainer",
-  "description": "Claude Code skills for authorized MDR, AWS CloudTrail investigation, detection engineering, and security operations reporting",
+  "name": "Cloud Detection",
+  "description": "Claude Code skills for cloud threat detection, shadow-AI discovery, later-moment (post-incident) investigation, shared collection, and reporting across AWS, Git, and Google Workspace.",
   "plugins": [
     {
-      "name": "aws-mdr",
-      "path": "projects/aws-mdr",
-      "description": "AWS CloudTrail MDR workflow: collect, normalize, package evidence, baseline, generate detections, triage, and report",
+      "name": "cloud-detection",
+      "path": "detection",
+      "description": "Continuous cloud threat detection and posture: AWS CloudTrail business baselines and portable detection specs, plus shadow-AI detection across AWS VPC Flow Logs, Git repositories, and Google Workspace.",
       "tags": [
         "aws",
-        "cloudtrail",
-        "mdr",
-        "soc",
         "detection-engineering",
-        "incident-response"
+        "shadow-ai",
+        "cloudtrail",
+        "soc",
+        "google-workspace",
+        "git"
+      ]
+    },
+    {
+      "name": "cloud-chaining",
+      "path": "chaining",
+      "description": "Proactive attack-path chaining across an AWS estate: collect the exposure/identity/crown-jewel graph, merge it, enumerate scored kill chains from an internet foothold or a single stolen credential to crown jewels, correlate live GuardDuty threats, and package red-team reports. Extensible misconfiguration->primitive->MITRE knowledge base.",
+      "tags": [
+        "attack-path",
+        "attack-graph",
+        "red-team",
+        "exposure",
+        "privilege-escalation",
+        "lateral-movement",
+        "crown-jewels",
+        "mitre-attack",
+        "aws"
+      ]
+    },
+    {
+      "name": "cloud-investigation",
+      "path": "investigation",
+      "description": "Later-moment (post-incident) examination: AWS CloudTrail raw-evidence packaging and business-context triage. Home for the broader AWS incident-response and forensics suite.",
+      "tags": [
+        "incident-response",
+        "forensics",
+        "investigation",
+        "triage",
+        "aws",
+        "dfir"
+      ]
+    },
+    {
+      "name": "cloud-collection",
+      "path": "collection",
+      "description": "Shared collectors and exporters that feed detection and investigation: AWS CloudTrail lookup collection and normalization, and Google Workspace admin-report export.",
+      "tags": [
+        "collection",
+        "aws",
+        "cloudtrail",
+        "google-workspace",
+        "evidence"
+      ]
+    },
+    {
+      "name": "cloud-reporting",
+      "path": "reporting",
+      "description": "Cross-cutting report packagers that turn CloudTrail and shadow-AI findings into Markdown, CSV, and JSON reporting artifacts for MDR and security review.",
+      "tags": [
+        "reporting",
+        "mdr",
+        "aws",
+        "shadow-ai"
       ]
     }
   ]

@@ -1,0 +1,4 @@
+interface:
+  display_name: "AWS Attack Surface Collector"
+  short_description: "Collect internet-exposure CSPM misses as an attack-model envelope"
+  default_prompt: "Use $aws-attack-surface-collector to collect the internet-facing exposure standard CSPM misses (public snapshots/AMIs, public RDS snapshots, public ECR, open Lambda URLs and API Gateway, publicly-accessible Redshift/DocumentDB/ElastiCache, WAF gaps, missing VPC flow logs, open security groups, and IMDSv1) across these AWS accounts and emit an aws_attack_model/v1 envelope."
